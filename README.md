@@ -332,25 +332,4 @@ Pending → Running → Succeeded / Failed
 * Always define resource requests & limits
 * Follow least-privilege RBAC
 
----
 
-## ⭐ Contribution & Usage
-
-This repository can be used as:
-
-* A **Kubernetes learning roadmap**
-* **Interview preparation guide**
-* **Production reference checklist**
-
-Feel free to fork, star ⭐, and contribute!
-
----
-
-If you want, next I can:
-
-* 📂 Split this into **folder-based docs**
-* 🧾 Add **example YAML manifests**
-* 🎯 Convert it into an **interview Q&A repo**
-* 📊 Create a **Kubernetes learning timeline**
-
-Just tell me 👍
