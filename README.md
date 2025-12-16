@@ -1,7 +1,3 @@
-# Kubernates-projects
-Here’s your content **converted into a clean, professional GitHub README.md** format. You can copy-paste this directly into a `README.md` file for your Kubernetes learning repo.
-
----
 
 # 🚀 Kubernetes Complete Roadmap (Beginner → Advanced)
 
