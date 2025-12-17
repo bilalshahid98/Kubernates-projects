@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: react-app          # Argo CD application name
+  namespace: argocd        # Must be in argocd namespace
+spec:
+  project: prod            # Must match an existing AppProject
+  source:
+    repoURL: #add github repo
+    targetRevision: main  # Branch name (ensure "main" exists)
+    path: .               # Root folder of manifests/Helm chart
+  destination:
+    server: https://kubernetes.default.svc  # The cluster API (default cluster)
+    namespace: prod                          # Target namespace
+  syncPolicy:
+    automated:
+      prune: true      # Removes resources that are deleted from Git
+      selfHeal: true   # Automatically corrects drift
