@@ -1,0 +1,49 @@
+#NOTE: Replace you email and domain name according to your project 
+# i am not using my real domain names here for a security purpose
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  namespace: prod  # <-- must match your apps
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+    - hosts:
+        - frontend.myapp.local
+        - laravel.myapp.local
+        - golang.myapp.local
+      secretName: myapp-tls
+  rules:
+    - host: frontend.myapp.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: react-frontend
+                port:
+                  number: 80
+    - host: laravel.myapp.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: laravel-backend
+                port:
+                  number: 80
+    - host: golang.myapp.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: golang-backend-service
+                port:
+                  number: 80

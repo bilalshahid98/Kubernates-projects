@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: react-frontend
+  namespace: prod
+spec:
+  type: ClusterIP
+  selector:
+    app: react-frontend
+  ports:
+    - port: 80
+      targetPort: 80

@@ -1,0 +1,15 @@
+#Create the cluster using the configuration file
+
+kind create cluster --config kind-config.yaml --name my-kind-cluster
+
+---
+#Verify the cluster:
+
+kubectl get nodes
+kubectl cluster-info
+
+---
+# Accessing the Cluster
+kubectl cluster-info
+
+---

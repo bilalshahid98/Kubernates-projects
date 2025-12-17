@@ -1,0 +1,189 @@
+Kind command
+
+kind create cluster --config kind-config.yaml --name ascend-kind-cluster
+kubectl config set-context --current --namespace=prod
+
+kind load docker-image k8s-react:v1 --name ascend-kind-cluster
+kind load docker-image k8s-react:v2 --name ascend-kind-cluster
+
+---
+kind load docker-image k8s-react:latest --name ascend-kind-cluster
+kind load docker-image  k8s-laravel-ticketing:latest --name ascend-kind-cluster
+kind load docker-image k8s-golang-backend:latest --name ascend-kind-cluster
+
+# port-forward command 
+kubectl port-forward --address 0.0.0.0 svc/react-service 8000:80 -n ticketing
+
+kubectl port-forward --address 0.0.0.0 svc/laravel-backend-service 8000:80 -n ticketing
+# rollout
+# laravel
+kubectl rollout restart deployment/laravel-backend -n ticketing
+kubectl rollout status deployment/laravel-backend -n ticketing
+
+#golang 
+kubectl rollout restart deployment/golang-ticketing-backend -n ticketing
+kubectl rollout status deployment/golang-ticketing-backend -n ticketing
+
+# react
+kubectl rollout restart deployment/react-tickt-frontend -n ticketing
+kubectl rollout status deployment/react-tickt-frontend -n ticketing
+
+-------------
+endpoints
+GOLANG_BACKEND_URL
+http://golang-backend-service.ticketing.svc.cluster.local
+
+LARAVEL_API_URL=
+
+http://laravel-backend-service.ticketing.svc.cluster.local
+
+=================
+deployment 
+2️⃣ Update the Deployment
+Option A: Rollout restart (simplest)
+
+If your Deployment already points to the same image tag (k8s-laravel-ticketing:latest) and imagePullPolicy: IfNotPresent:
+
+kubectl rollout restart deployment/laravel-backend -n ticketing
+
+
+Kubernetes will terminate existing pods and create new pods using the updated image.
+
+Check rollout status:
+
+kubectl rollout status deployment/laravel-backend -n ticketing
+------------
+Service name 
+
+golang-backend-service 8000
+laravel-backend-service.  Port = 9000 L , 8002 N
+react-service
+
+==============
+
+Docker images 
+
+k8s-golang-backend:latest
+k8s-laravel-ticketing:latest
+k8s-react:latest
+=================
+IfNotPresent
+
+[Unit]
+Description=Al-Munazam .NET API
+After=network.target
+
+[Service]
+WorkingDirectory=/home/devopsadmin/public_html/dev-nmr-survay/obligation-dotnet-backend/Al-Munazam/publish
+ExecStart=/home/devopsadmin/public_html/dev-nmr-survay/obligation-dotnet-backend/Al-Munazam/publish/API --urls "http://0.0.0.0:5000"
+Restart=always
+User=devopsadmin
+
+[Install]
+WantedBy=multi-user.target
+/home/devopsadmin/public_html/dev-nmr-survay/obligation-dotnet-backend/Al-Munazam 
+
+---
+# rollout statergy
+Step 1 — Check current image
+
+kubectl get deployment golang-ticketing-backend -o yaml | grep image
+---
+#Step 2 — Update the image (simulate v2)
+kubectl set image deployment/golang-ticketing-backend golang-ticketing-backend=golang-ticketing-backend:v2
+kubectl set image deployment/golang-ticketing-backend golang-backend-container=golang-ticketing-backend:v2
+---
+#Step 3 — Watch the rolling update
+kubectl rollout status deployment/golang-ticketing-backend
+kubectl get pods -o wide
+---
+#Step 4 — Check rollout history
+kubectl rollout history deployment/golang-ticketing-backend
+--- 
+#Step 5 — Rollback if something goes wrong
+kubectl rollout undo deployment/golang-ticketing-backend
+kubectl rollout status deployment/golang-ticketing-backend
+
+---
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1        # create 1 extra pod if needed
+    maxUnavailable: 0  # ensure all existing pods stay running until new ones are ready
+
+---
+#cannary deployemnt 
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: react-frontend
+spec:
+  hosts:
+    - "*"
+  http:
+    - route:
+        - destination:
+            host: react-tickt-frontend
+            subset: v1
+          weight: 90
+        - destination:
+            host: react-tickt-frontend
+            subset: v2
+          weight: 10
+
+
+  selector:
+    matchLabels:
+      app: react-tickt-frontend
+      version: v2
+
+--- 
+#blue and green 
+
+# in deployment
+  labels:
+    app: react-tickt-frontend
+    version: blue
+
+#in service
+
+  selector:
+    app: react-tickt-frontend
+    version: blue   # initially pointing to Blue
+
+#patch 
+'' kubectl patch service react-service -n bluegreen -p '{"spec":{"selector":{"app":"react-tickt-frontend","version":"green"}}}'
+
+#roolback
+kubectl patch service react-service -n bluegreen -p '{"spec":{"selector":{"app":"react-tickt-frontend","version":"blue"}}}''
+
+---
+#istio setup
+export PATH=$PWD/bin:$PATH
+
+istioctl version
+istioctl install --set profile=demo -y
+---
+# 2️⃣ Label your namespace for automatic sidecar injection
+
+# redeploy all the deployment
+kubectl rollout restart deployment golang-ticketing-backend
+kubectl rollout restart deployment laravel-backend
+kubectl rollout restart deployment  react-tickt-frontend
+
+kubectl port-forward svc/argocd-server -n argocd 8080:443 --address 0.0.0.0
+kubectl -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath="{.data.password}" | base64 -d
+echo
+
+
+---
+#ARGOCD
+
+password = wqpvys02yU5jFwPF
+
+kubectl port-forward \
+  --address 0.0.0.0 \
+  svc/argocd-server \
+  -n argocd \
+  8000:443
