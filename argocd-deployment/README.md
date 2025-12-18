@@ -75,7 +75,7 @@ argocd repo add git@github.com:my-org/myapp.git \
   --ssh-private-key-path ~/.ssh/id_rsa_argocd
 
 
-argocd repo add git@github.com:Ascend-Developers/DevOps-Research-Development.git \
+argocd repo add #add github repo \
   --ssh-private-key-path ~/.ssh/id_rsa
 
 argocd repo list
@@ -91,31 +91,33 @@ metadata:
 spec:
   description: "Development environment"
   sourceRepos:
-    - git@github.com:Ascend-Developers/DevOps-Research-Development.git
+    - #add github repo
   destinations:
     - namespace: prod
       server: https://kubernetes.default.svc
 
 ---
 5️⃣ Applications using SSH repo
+
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: myapp-dev
-  namespace: argocd
+  name: react-app          # Argo CD application name
+  namespace: argocd        # Must be in argocd namespace
 spec:
-  project: dev
+  project: prod            # Must match an existing AppProject
   source:
-    repoURL: git@github.com:my-org/myapp.git
-    targetRevision: HEAD
-    path: dev
+    repoURL: #add github repo
+    targetRevision: main  # Branch name (ensure "main" exists)
+    path: .               # Root folder of manifests/Helm chart
   destination:
-    server: https://kubernetes.default.svc
-    namespace: dev
+    server: https://kubernetes.default.svc  # The cluster API (default cluster)
+    namespace: prod                          # Target namespace
   syncPolicy:
     automated:
-      prune: true
-      selfHeal: true
+      prune: true      # Removes resources that are deleted from Git
+      selfHeal: true   # Automatically corrects drift
+
 
 ---
 C. Sync Waves & Hooks
