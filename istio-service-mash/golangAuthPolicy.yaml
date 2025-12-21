@@ -1,0 +1,14 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-backend-to-backend-2
+  namespace: prod
+spec:
+  selector:
+    matchLabels:
+      app: golang-backend
+  rules:
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/prod/sa/laravel-sa

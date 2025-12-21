@@ -1,0 +1,40 @@
+# to cehck gateway is running 
+kubectl get pods -n istio-system -l istio=ingressgateway
+
+#Check Gateway resource:
+kubectl get gateway -n prod
+kubectl describe gateway prod-gateway -n prod
+
+kubectl get svc istio-ingressgateway -n istio-system
+NAME                   TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                                      AGE
+istio-ingressgateway   LoadBalancer   10.96.245.24   <pending>     15021:32010/TCP,80:30986/TCP,443:30923/TCP   14m
+root@icinga-monitoring:~/istio-ServiceMash# 
+
+---
+#Verify VirtualService Routing
+kubectl get virtualservice -n prod
+kubectl describe virtualservice react-vs -n prod
+
+#Verify mTLS
+kubectl get peerauthentication -n prod
+kubectl describe peerauthentication default -n prod
+
+#Test pod-to-pod communication:
+
+kubectl exec -it <react-pod> -n prod -- curl http://laravel-backend.prod.svc.cluster.local
+kubectl exec -it <laravel-pod> -n prod -- curl http://golang-backend.prod.svc.cluster.local
+
+kubectl exec -it react-frontend-649c959c85-fnxdw  -n prod -- curl http://laravel-backend.prod.svc.cluster.local
+curl: (7) Failed to connect to laravel-backend.prod.svc.cluster.local port 80 after 21 ms: Could not connect to server
+command terminated with exit code 7
+---
+#Verify AuthorizationPolicies
+
+kubectl get authorizationpolicy -n prod
+kubectl describe authorizationpolicy allow-react-to-backends -n prod
+
+---
+
+#Check Istio Sidecars
+kubectl get pods -n prod -o jsonpath='{range .items[*]}{.metadata.name}{" : "}{.spec.containers[*].name}{"\n"}{end}'
+

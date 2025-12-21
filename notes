@@ -172,6 +172,9 @@ export PATH=$PWD/bin:$PATH
 
 istioctl version
 istioctl install --set profile=demo -y
+
+istioctl install --set profile=default  -y
+
 ---
 # 2️⃣ Label your namespace for automatic sidecar injection
 

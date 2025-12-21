@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: golang-backend
+  namespace: prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: golang-backend
+  template:
+    metadata:
+      labels:
+        app: golang-backend
+      annotations:
+        # Enable Istio sidecar injection explicitly (optional if namespace is labeled)
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+        - name: golang-backend
+          image: k8s-golang-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+
+          # Resource Management
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+
+          # Health Checks (Istio-ready)
+          livenessProbe:
+            httpGet:
+              path: /api/ping
+              port: 8000
+            initialDelaySeconds: 15   # slightly longer to allow sidecar init
+            periodSeconds: 10
+            failureThreshold: 5
+
+          readinessProbe:
+            httpGet:
+              path: /api/ping
+              port: 8000
+            initialDelaySeconds: 10   # give time for sidecar
+            periodSeconds: 5
+            failureThreshold: 3
+
+      # Optional: tolerations for Istio init
+      tolerations:
+        - key: "node.kubernetes.io/not-ready"
+          operator: "Exists"
+          effect: "NoExecute"
+          tolerationSeconds: 300
+        - key: "node.kubernetes.io/unreachable"
+          operator: "Exists"
+          effect: "NoExecute"
+          tolerationSeconds: 300
