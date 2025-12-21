@@ -1,0 +1,4 @@
+#Check User Permissions
+kubectl auth can-i --list
+
+---
