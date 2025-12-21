@@ -1,0 +1,13 @@
+readOnlyRootFilesystem: true
+
+
+# ❓ Problem
+
+# Writable root FS allows malware persistence
+# 📌 Why:
+
+# Prevents file tampering
+
+# Forces clean app behavior
+
+# ⚠️ App must not write to /

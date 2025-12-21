@@ -1,0 +1,4 @@
+hostNetwork: true
+hostPID: true
+hostPath:
+privileged: true

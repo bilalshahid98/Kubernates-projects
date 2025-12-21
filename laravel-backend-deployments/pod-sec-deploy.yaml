@@ -1,0 +1,132 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: laravel-backend
+  namespace: prod
+  labels:
+    app: laravel-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: laravel-backend
+  template:
+    metadata:
+      labels:
+        app: laravel-backend
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        # =======================
+        # NGINX CONTAINER
+        # =======================
+        - name: nginx
+          image: nginx:stable-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+
+            # ✅ REQUIRED writable mounts
+            - name: nginx-cache
+              mountPath: /var/cache/nginx
+            - name: nginx-run
+              mountPath: /var/run
+            - name: nginx-tmp
+              mountPath: /tmp
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ "ALL" ]
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+        # =======================
+        # PHP-FPM CONTAINER
+        # =======================
+        - name: php-fpm
+          image: k8s-laravel-ticketing:v1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9000
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ "ALL" ]
+
+          volumeMounts:
+            - name: laravel-storage
+              mountPath: /var/www/html/storage
+
+            # ✅ REQUIRED writable mounts
+            - name: php-run
+              mountPath: /var/run
+            - name: php-tmp
+              mountPath: /tmp
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+
+      volumes:
+        # Nginx config
+        - name: nginx-config
+          configMap:
+            name: laravel-nginx-config
+
+        # Laravel storage
+        - name: laravel-storage
+          emptyDir: {}
+
+        # Nginx runtime volumes
+        - name: nginx-cache
+          emptyDir: {}
+        - name: nginx-run
+          emptyDir: {}
+        - name: nginx-tmp
+          emptyDir: {}
+
+        # PHP runtime volumes
+        - name: php-run
+          emptyDir: {}
+        - name: php-tmp
+          emptyDir: {}

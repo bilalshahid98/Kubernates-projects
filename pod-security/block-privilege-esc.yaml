@@ -1,0 +1,9 @@
+securityContext:
+  allowPrivilegeEscalation: false
+
+# Why:
+
+# Stops attackers from escalating privileges
+
+# Required by Restricted PSS
+# """""

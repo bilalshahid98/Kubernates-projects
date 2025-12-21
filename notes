@@ -8,13 +8,22 @@ kind load docker-image k8s-react:v2 --name ascend-kind-cluster
 
 ---
 kind load docker-image k8s-react:latest --name ascend-kind-cluster
-kind load docker-image  k8s-laravel-ticketing:latest --name ascend-kind-cluster
-kind load docker-image k8s-golang-backend:latest --name ascend-kind-cluster
+kind load docker-image  k8s-laravel-ticketing:v1.0.0 --name ascend-kind-cluster
+kind load docker-image k8s-golang-backend:v1.0.0 --name ascend-kind-cluster
+
+docker tag k8s-laravel-ticketing:latest k8s-laravel-ticketing:v1.0.0
+docker tag k8s-golang-backend:latest k8s-golang-backend:v1.0.0
 
 # port-forward command 
 kubectl port-forward --address 0.0.0.0 svc/react-service 8000:80 -n ticketing
 
-kubectl port-forward --address 0.0.0.0 svc/laravel-backend-service 8000:80 -n ticketing
+kubectl port-forward --address 0.0.0.0 svc/laravel-backend-service 8001:80 -n ticketing
+
+kubectl port-forward --address 0.0.0.0 svc/laravel-backend-service 8002:80 -n ticketing
+
+101.46.56.41:8001  laravel
+101.46.56.41:8000  react
+101.46.56.41:8002   golang
 # rollout
 # laravel
 kubectl rollout restart deployment/laravel-backend -n ticketing

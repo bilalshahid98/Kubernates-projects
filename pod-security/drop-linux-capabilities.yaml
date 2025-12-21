@@ -1,0 +1,12 @@
+capabilities:
+  drop:
+    - ALL
+
+❓ Problem
+
+# Linux capabilities = superpowers (NET_ADMIN, SYS_ADMIN)
+# 📌 Why:
+
+# Removes ALL unnecessary kernel privileges
+
+# Best practice for app containers
